@@ -1,6 +1,7 @@
 {
     "name": "cse340-practice-morales",
     "dependencies": {
+        "ejs": "^3.1.10",
         "express": "^4.21.2"
     },
     "type": "module",
