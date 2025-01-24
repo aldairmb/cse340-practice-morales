@@ -1,34 +1,78 @@
-
-// Add these imports to your existing imports
-import { fileURLToPath } from 'url';
-import path from 'path';
-
-// Create __dirname and __filename variables
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+// Import express using ESM syntax
 import express from 'express';
+import path from 'path';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const mode = process.env.MODE || 'production';
+const port = process.env.PORT || 3000;
+
+// Create an instance of an Express application
 const app = express();
 
-const PORT = 3000;
-
-// Place before all other calls to app
+// Set the view engine to EJS
 app.set('view engine', 'ejs');
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Register the 'public' directory to serve static files
+app.use(express.static(path.join(__dirname, 'public')));
 
- // Serve static files from the public directory
- app.use(express.static(path.join(__dirname, 'public')));
-
- // Place after your existing app.use(express.static(...)) call
-app.set('views', path.join(__dirname, 'views'));
-
-// Example of the home route using the layout
+// Home page
 app.get('/', (req, res) => {
     const title = 'Home Page';
     const content = '<h1>Welcome to the Home Page</h1>';
-    res.render('index', { title, content });
+    res.render('index', { title, content, mode, port });
+});
+
+// About page
+app.get('/about', (req, res) => {
+    const title = 'About Page';
+    const content = '<h1>Welcome to the About Page</h1>';
+    res.render('index', { title, content, mode, port });
+});
+
+// Contact page
+app.get('/contact', (req, res) => {
+    const title = 'Contact Page';
+    const content = '<h1>Welcome to the Contact Page</h1>';
+    res.render('index', { title, content, mode, port });
+});
+
+// Account page
+app.get('/account/:name/:id', (req, res) => {
+    const title = "Account Page";
+    const { name, id } = req.params;
+    const isEven = id % 2 === 0 ? "even" : "odd";
+    const content = `
+        <h1>Welcome, ${name}!</h1>
+        <p>Your account ID is ${id}, which is an ${isEven} number.</p>
+    `;
+    res.render('index', { title, content, mode, port });
+});
+
+// When in development mode, start a WebSocket server for live reloading
+if (mode.includes('dev')) {
+    const ws = await import('ws');
+
+    try {
+        const wsPort = parseInt(port) + 1;
+        const wsServer = new ws.WebSocketServer({ port: wsPort });
+
+        wsServer.on('listening', () => {
+            console.log(`WebSocket is running on http://localhost:${wsPort}`);
+        });
+
+        wsServer.on('error', (error) => {
+            console.error('WebSocket server error:', error);
+        });
+    } catch (error) {
+        console.error('Failed to start WebSocket server:', error);
+    }
+}
+
+// Start the server and listen on the specified port
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
 });
