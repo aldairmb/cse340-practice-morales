@@ -19,10 +19,26 @@ app.set('view engine', 'ejs');
 // Register the 'public' directory to serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Global middleware to add a timestamp to the request object
+app.use((req, res, next) => {
+    req.timestamp = new Date().toISOString();
+    next();
+});
+
+// Global middleware to set a custom header
+app.use((req, res, next) => {
+    res.setHeader('X-Powered-By', 'Express and Duct Tape');
+    next();
+});
+
 // Home page
 app.get('/', (req, res) => {
+    const timestamp = req.timestamp;
     const title = 'Home Page';
-    const content = '<h1>Welcome to the Home Page</h1>';
+    const content = `
+        <h1>Welcome to the Home Page</h1>
+        <p>You requested this page at: ${timestamp}</p>
+    `;
     res.render('index', { title, content, mode, port });
 });
 
@@ -40,8 +56,32 @@ app.get('/contact', (req, res) => {
     res.render('index', { title, content, mode, port });
 });
 
-// Account page
-app.get('/account/:name/:id', (req, res) => {
+// ID validation middleware
+const validateId = (req, res, next) => {
+    const { id } = req.params;
+    if (isNaN(id)) {
+        const error = new Error('Invalid ID: must be a number.');
+        error.status = 400;
+        next(error);
+        return;
+    }
+    next();
+};
+
+// Middleware to validate name
+const validateName = (req, res, next) => {
+    const { name } = req.params;
+    if (!/^[a-zA-Z]+$/.test(name)) {
+        const error = new Error('Invalid name: must only contain letters.');
+        error.status = 400;
+        next(error);
+        return;
+    }
+    next();
+};
+ 
+// Account page route with ID and name validation
+app.get('/account/:name/:id', validateName, validateId, (req, res) => {
     const title = "Account Page";
     const { name, id } = req.params;
     const isEven = id % 2 === 0 ? "even" : "odd";
@@ -50,6 +90,34 @@ app.get('/account/:name/:id', (req, res) => {
         <p>Your account ID is ${id}, which is an ${isEven} number.</p>
     `;
     res.render('index', { title, content, mode, port });
+});
+
+// Handle 404 errors by passing an error
+app.use((req, res, next) => {
+    const error = new Error('Page Not Found');
+    error.status = 404;
+    next(error);
+});
+ 
+// Centralized error handler
+app.use((err, req, res, next) => {
+    const status = err.status || 500;
+    const context = { mode, port, error: err.message };
+    res.status(status);
+    switch(status) {
+        case 400:
+            context.title = 'Bad Request';
+            res.render('400', context);
+            break;
+        case 404:
+            context.title = 'Page Not Found';
+            res.render('400', context);
+            break;
+        default:
+            context.title = 'Internal Server Error';
+            context.error = err.message;
+            res.render('500', context);
+    }
 });
 
 // When in development mode, start a WebSocket server for live reloading
