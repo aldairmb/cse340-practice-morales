@@ -12,5 +12,4 @@ router.get('/about', (req, res) => {
     res.render('about', { title: 'About' });
 });
 
-
 export default router;

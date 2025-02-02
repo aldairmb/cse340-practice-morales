@@ -34,6 +34,7 @@ app.use('/', baseRoute);
 // Apply error handlers
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
+
  
 // Start the server on the specified port
 const PORT = process.env.PORT || 3000;
