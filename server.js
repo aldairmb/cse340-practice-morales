@@ -2,12 +2,16 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+import(getNavigationLinks) from './src/modelx/index.js';
+getNavigationLinks();
  
 // Import all other required modules: Route handlers, Middleware, etc.
 import baseRoute from './src/routes/index.js';
 import layouts from './src/middleware/layouts.js';
 import staticPaths from './src/middleware/static-paths.js';
 import { notFoundHandler, globalErrorHandler } from './src/middleware/error-handler.js';
+import { getNavigationLinks } from './database/index.js';
  
 // Get the current file path and directory name
 const __filename = fileURLToPath(import.meta.url);
