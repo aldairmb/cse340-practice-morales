@@ -5,7 +5,7 @@ const devMiddleware = (req, res, next) => {
     res.locals.styles = [];
 
     if (res.locals.isDevMode) {
-        res.locals.devModeMsg = '<p class="dev-mode-msg">Warning: Development Mode Enabled</p>';
+        res.locals.devModeMsg = '<p class="dev-mode-msg">Warning: Development Mood Enabled</p>';
         
         const devModeStyles = `.dev-mode-msg { color: red; font-weight: bold; }`;
         res.locals.styles.push(devModeStyles);

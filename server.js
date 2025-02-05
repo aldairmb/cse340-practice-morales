@@ -31,8 +31,6 @@ app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
 
-app.use(devMiddleware);
-
  
 // Set Layouts middleware to automatically wrap views in a layout and configure default layout
 app.set('layout default', 'default');
@@ -41,6 +39,8 @@ app.use(layouts);
  
 // Use the home route for the root URL
 app.use('/', baseRoute);
+
+app.use(devMiddleware);
 
 // Apply error handlers
 app.use(notFoundHandler);
