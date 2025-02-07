@@ -1,26 +1,36 @@
-const devMiddleware = (req, res, next) => {
-    res.locals.port = process.env.PORT;
-    res.locals.isDevMode = process.env.MODE === 'dev';
+
+const port = process.env.PORT || 3000;
+const mode = process.env.MODE || 'production';
+
+const configureSettingsBasedOnMode = (req, res, next) => {
+    res.locals.devModeWarning = '';
+    res.locals.isDevMode = mode.includes('dev');
+    res.locals.port = port;
     res.locals.scripts = [];
     res.locals.styles = [];
 
     if (res.locals.isDevMode) {
-        res.locals.devModeMsg = '<p class="dev-mode-msg">Warning: Development Mood Enabled</p>';
-        
-        const devModeStyles = `.dev-mode-msg { color: red; font-weight: bold; }`;
-        res.locals.styles.push(devModeStyles);
+        // Add development mode warning
+        res.locals.devModeWarning = '<p class="dev-mode-msg">Site is in development mode<p>';
 
+        // Add a stylesheet that loads only in development mode
+        res.locals.styles.push('<link rel="stylesheet" href="css/dev-mode.css">');
+
+        // Add livereload script
         res.locals.scripts.push(`
             <script>
-                const ws = new WebSocket('ws://127.0.0.1:${parseInt(process.env.PORT) + 1}');
+                const ws = new WebSocket('ws://127.0.0.1:${parseInt(port) + 1}');
                 ws.onclose = () => {
                     setTimeout(() => location.reload(), 2000);
                 };
-            </script>
+            </script>    
         `);
+
+        // Add a script that loads only in development mode
+        res.locals.scripts.push('<script src="js/dev-mode.js"></script');
     }
 
     next();
 };
 
-export default devMiddleware;
+export default configureSettingsBasedOnMode;
